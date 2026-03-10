@@ -45,7 +45,9 @@ class TypographyClockCard extends HTMLElement {
           --font: 'Space Grotesk', sans-serif;
         }
         .card {
-          padding: 16px 20px;
+          padding: 60px 20px 20px;
+          display: flex;
+          flex-direction: column;
           border-radius: 14px;
           background: rgba(255, 255, 255, 0.03);
         }
@@ -69,9 +71,8 @@ class TypographyClockCard extends HTMLElement {
         .stats {
           display: flex;
           gap: 16px;
-          margin-top: 12px;
-          padding-top: 10px;
-          border-top: 1px solid rgba(255,255,255,0.05);
+          margin-top: auto;
+          padding-top: 12px;
         }
         .stat {
           display: flex;
