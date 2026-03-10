@@ -49,6 +49,11 @@ class TypographyCoverCard extends HTMLElement {
           flex-direction: column;
           gap: 8px;
         }
+        .container.grid {
+          display: grid;
+          grid-template-columns: repeat(var(--cols, 1), 1fr);
+          gap: 8px;
+        }
         .cover {
           position: relative;
           display: flex;
@@ -99,11 +104,17 @@ class TypographyCoverCard extends HTMLElement {
           overflow: hidden;
           text-overflow: ellipsis;
         }
+        .container.grid .name {
+          font-size: 0.9rem;
+        }
         .status {
           font-family: var(--font);
           font-size: 0.8rem;
           font-weight: 300;
           margin-top: 1px;
+        }
+        .container.grid .status {
+          font-size: 0.7rem;
         }
         .right {
           display: flex;
@@ -128,8 +139,17 @@ class TypographyCoverCard extends HTMLElement {
           font-weight: 400;
           color: #555;
         }
+        .container.grid .value.open {
+          font-size: 1.2rem;
+        }
+        .container.grid .value.closed {
+          font-size: 0.9rem;
+        }
+        .container.grid .cover {
+          padding: 10px 12px;
+        }
       </style>
-      <div class="container"></div>
+      <div class="container${this._config.columns ? ' grid' : ''}"${this._config.columns ? ` style="--cols:${this._config.columns}"` : ''}></div>
     `;
 
     const container = this.shadowRoot.querySelector('.container');
