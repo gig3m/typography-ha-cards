@@ -142,6 +142,12 @@ class TypographyMediaCard extends HTMLElement {
           border-radius: 2px;
           touch-action: none;
         }
+        .vol-track::before {
+          content: '';
+          position: absolute;
+          left: 0; right: 0;
+          top: -10px; bottom: -10px;
+        }
         .vol-fill {
           position: absolute;
           left: 0;
