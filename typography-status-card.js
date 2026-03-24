@@ -257,6 +257,11 @@ class TypographyStatusCard extends HTMLElement {
         const defaultOff = domain === 'automation' ? 'Off' : 'No';
         const label = isOn ? (ent.label_on || defaultOn) : (ent.label_off || defaultOff);
         s.valueEl.innerHTML = `<span class="status-dot" style="background:${color};box-shadow:0 0 6px ${color}60"></span><span class="status-text" style="color:${color}">${label}</span>`;
+      } else if (domain === 'climate') {
+        const colorMap = { 'auto': '#00E676', 'heat': '#FF5252', 'cool': '#448AFF', 'heat_cool': '#FFB300', 'off': '#555', 'unavailable': '#555' };
+        const color = ent.color_map ? (this._resolveColor(val, ent.color_map) || colorMap[val] || '#8A8A8E') : (colorMap[val] || '#8A8A8E');
+        const display = val.charAt(0).toUpperCase() + val.slice(1);
+        s.valueEl.innerHTML = `<span class="status-dot" style="background:${color};box-shadow:0 0 6px ${color}60"></span><span class="status-text" style="color:${color}">${display}</span>`;
       } else if (val === 'unavailable' || val === 'unknown') {
         s.valueEl.innerHTML = '<span style="color:#555">—</span>';
       } else {

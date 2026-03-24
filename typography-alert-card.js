@@ -45,11 +45,28 @@ class TypographyAlertCard extends HTMLElement {
         triggered = state.state !== alert.condition_value;
       } else if (alert.condition === 'equals') {
         triggered = state.state === alert.condition_value;
+      } else if (alert.condition === 'below') {
+        const num = parseFloat(state.state);
+        triggered = !isNaN(num) && num < alert.condition_value;
+      } else if (alert.condition === 'above') {
+        const num = parseFloat(state.state);
+        triggered = !isNaN(num) && num > alert.condition_value;
+      } else if (alert.condition === 'unavailable') {
+        triggered = state.state === 'unavailable' || state.state === 'unknown';
       }
 
       if (triggered) {
         const s = ALERT_STYLES[alert.type || 'error'];
-        const detail = alert.detail || state.state;
+        let detail = alert.detail;
+        if (!detail && alert.detail_attribute) {
+          detail = state.attributes[alert.detail_attribute];
+        }
+        if (!detail && Array.isArray(state.attributes.Alerts) && state.attributes.Alerts.length > 0) {
+          detail = state.attributes.Alerts[0].Headline || state.attributes.Alerts[0].Event;
+        }
+        if (!detail) {
+          detail = state.attributes.unit_of_measurement ? state.state + state.attributes.unit_of_measurement : state.state;
+        }
         active.push({ ...alert, detail, style: s });
       }
     }

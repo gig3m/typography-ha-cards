@@ -1,4 +1,8 @@
-// Ensure Space Grotesk is available globally
+// Typography Statuspage Card v3
+// Uptime history bars inspired by statuspage.io
+// Uses HA Uptime Kuma integration entities for status + uptime %
+// Uses HA history for daily bars (ignoring unavailable/unknown states)
+
 if (!document.querySelector('#typo-fonts')) {
   const style = document.createElement('style');
   style.id = 'typo-fonts';
@@ -242,12 +246,13 @@ class TypographyStatuspageCard extends HTMLElement {
     const services = this._config.services;
     let allUp = true;
     let anyDown = false;
+    let hasData = false;
 
     services.forEach((s, i) => {
       // Update uptime % from the uptime entity if provided
       if (s.uptime_entity) {
         const uptimeState = this._hass.states[s.uptime_entity];
-        if (uptimeState) {
+        if (uptimeState && uptimeState.state !== 'unavailable' && uptimeState.state !== 'unknown') {
           const pct = parseFloat(uptimeState.state);
           const el = this.shadowRoot.getElementById(`pct-${i}`);
           if (el && !isNaN(pct)) {
@@ -257,10 +262,13 @@ class TypographyStatuspageCard extends HTMLElement {
         }
       }
 
-      // Track overall status
+      // Track overall status — skip unavailable/unknown entities
       const state = this._hass.states[s.entity];
       if (state) {
         const v = state.state.toLowerCase();
+        // Skip entities that HA can't reach — don't count as degraded
+        if (v === 'unavailable' || v === 'unknown') return;
+        hasData = true;
         if (v !== 'up' && v !== 'on' && v !== 'running') {
           allUp = false;
           if (v === 'down' || v === 'off') anyDown = true;
@@ -270,7 +278,10 @@ class TypographyStatuspageCard extends HTMLElement {
 
     const summary = this.shadowRoot.getElementById('summary');
     if (summary) {
-      if (allUp) {
+      if (!hasData) {
+        summary.textContent = 'Loading…';
+        summary.className = 'summary';
+      } else if (allUp) {
         summary.textContent = 'All Operational';
         summary.className = 'summary';
       } else if (anyDown) {
@@ -331,8 +342,6 @@ class TypographyStatuspageCard extends HTMLElement {
               seg.style.background = '#00E676';
             } else if (upPct >= 95) {
               seg.style.background = '#FFB300';
-            } else if (upPct > 0) {
-              seg.style.background = '#FF5252';
             } else {
               seg.style.background = '#FF5252';
             }
@@ -370,7 +379,8 @@ class TypographyStatuspageCard extends HTMLElement {
       state: (entry.s !== undefined ? entry.s : entry.state || '').toLowerCase()
     })).sort((a, b) => a.time - b.time);
 
-    // For each day, calculate time spent in "up" states
+    // Skip 'unavailable'/'unknown' — these mean HA lost contact with the
+    // integration, NOT that the monitored service is down.
     for (let d = 0; d < days; d++) {
       const dayStart = startMs + d * dayMs;
       const dayEnd = dayStart + dayMs;
@@ -394,7 +404,7 @@ class TypographyStatuspageCard extends HTMLElement {
         if (entry.time >= effectiveEnd) break;
 
         const duration = entry.time - cursor;
-        if (duration > 0 && currentState !== null) {
+        if (duration > 0 && currentState !== null && !this._isIgnored(currentState)) {
           buckets[d].total += duration;
           if (this._isUp(currentState)) buckets[d].up += duration;
         }
@@ -404,7 +414,7 @@ class TypographyStatuspageCard extends HTMLElement {
 
       // Fill remaining time in day
       const remaining = effectiveEnd - cursor;
-      if (remaining > 0 && currentState !== null) {
+      if (remaining > 0 && currentState !== null && !this._isIgnored(currentState)) {
         buckets[d].total += remaining;
         if (this._isUp(currentState)) buckets[d].up += remaining;
       }
@@ -415,6 +425,10 @@ class TypographyStatuspageCard extends HTMLElement {
 
   _isUp(state) {
     return state === 'up' || state === 'on' || state === 'running' || state === 'connected' || state === 'home';
+  }
+
+  _isIgnored(state) {
+    return state === 'unavailable' || state === 'unknown';
   }
 }
 

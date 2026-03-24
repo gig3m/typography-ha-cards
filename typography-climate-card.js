@@ -164,7 +164,6 @@ class TypographyClimateCard extends HTMLElement {
       if (!state) continue;
 
       const currentTemp = Math.round(state.attributes.current_temperature || 0);
-      const targetTemp = Math.round(state.attributes.temperature || 0);
       const action = state.attributes.hvac_action || state.state;
       const mode = state.state;
 
@@ -175,13 +174,24 @@ class TypographyClimateCard extends HTMLElement {
       else if (action === 'fan') { statusKey = 'fan'; statusText = 'Fan'; }
       else if (mode === 'off') { statusKey = 'off'; statusText = 'Off'; }
 
+      // Build target temp string — heat_cool has high/low, single modes have temperature
+      let targetStr = '';
+      const tempHigh = state.attributes.target_temp_high;
+      const tempLow = state.attributes.target_temp_low;
+      const tempSingle = state.attributes.temperature;
+      if (mode === 'heat_cool' && tempLow != null && tempHigh != null) {
+        targetStr = Math.round(tempLow) + '–' + Math.round(tempHigh) + '°';
+      } else if (tempSingle != null) {
+        targetStr = Math.round(tempSingle) + '°';
+      }
+
       const c = CLIMATE_COLORS[statusKey];
 
       r.el.style.background = c.bg;
       r.icon.textContent = c.icon;
       r.icon.style.color = statusKey === 'idle' ? '#00E676' : c.text;
       r.status.style.color = c.text;
-      r.status.textContent = statusText + ' → ' + targetTemp + '°';
+      r.status.textContent = targetStr ? statusText + ' → ' + targetStr : statusText;
       r.temp.textContent = currentTemp;
     }
   }
