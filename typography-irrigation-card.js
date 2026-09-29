@@ -343,8 +343,8 @@ class TypographyIrrigationCard extends HTMLElement {
     const solar = this._getNumeric('sensor.radix_solar_radiation');
     const shadowMode = this._getState('sensor.radix_shadow_mode');
     const zonesNeeding = this._getState('sensor.radix_zones_needing_water');
-    const rainToday = this._getNumeric(this._config.rain_today || 'sensor.arrington_home_rain_today');
-    const rainMonth = this._getNumeric(this._config.rain_month || 'sensor.arrington_home_rain_this_month');
+    const rainToday = this._getNumeric(this._config.rain_today);
+    const rainMonth = this._getNumeric(this._config.rain_month);
 
     // Build zone data
     const zones = this._config.zones.map(z => {
